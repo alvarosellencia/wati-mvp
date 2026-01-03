@@ -22,14 +22,20 @@ export async function POST(request: Request) {
       const userText = message.text.body;
       const userPhone = message.from;
 
-      // 1. LEEMOS LA CONFIGURACIÓN DEL DUEÑO DESDE LA DB
+      // 1. CARGAMOS LA CONFIG PRO
       const configs = await sql`SELECT * FROM config LIMIT 1`;
-      const config = configs[0]; // Aquí tenemos horarios, nombre, días libres...
+      const config = configs[0];
+
+      // --- CHEQUEO DE SEGURIDAD: ¿ESTÁ EL BOT ENCENDIDO? ---
+      if (!config.is_bot_active) {
+        console.log('💤 BOT APAGADO. Ignorando mensaje.');
+        return NextResponse.json({ success: true }); // No hacemos nada
+      }
 
       const ahora = new Date().toLocaleString("es-ES", { timeZone: "Europe/Madrid" });
-      console.log(`📩 MENSAJE PARA ${config.restaurant_name}: ${userText}`);
+      console.log(`📩 MENSAJE (${config.restaurant_name}): ${userText}`);
 
-      // 2. INYECTAMOS LA CONFIG REAL EN EL PROMPT
+      // 2. PROMPT AVANZADO CON TODAS LAS REGLAS
       const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         response_format: { type: "json_object" },
@@ -39,17 +45,21 @@ export async function POST(request: Request) {
             content: `Eres el asistente virtual de '${config.restaurant_name}'.
             MOMENTO ACTUAL: ${ahora}.
             
-            INFORMACIÓN DEL LOCAL (CONFIGURADA POR EL DUEÑO):
+            📋 REGLAS DEL NEGOCIO:
             - Horario: ${config.schedule}
-            - Días de cierre: ${config.closed_days}
-            - Mesas totales: ${config.total_tables}
+            - Días CERRADO: ${config.closed_days}
+            - Zonas disponibles: ${config.zones}
+            - Máximo personas por grupo: ${config.max_pax_per_booking} (Si piden más, diles que llamen por tlf).
+            - Duración reserva: ${config.avg_booking_duration} minutos.
             
-            OBJETIVO: Gestionar reservas respetando ESTRICTAMENTE el horario anterior.
+            TU OBJETIVO:
+            Gestionar reservas. Si piden mesa para mucha gente o fuera de horario, rechaza amablemente.
+            Intenta asignar una zona (Interior/Terraza) si el cliente lo pide.
             
             FORMATO JSON OBLIGATORIO:
             {
-              "reply": "Respuesta amable al cliente (usa emojis)",
-              "booking": null O { "date": "YYYY-MM-DD", "time": "HH:MM", "pax": 4, "name": "Nombre" }
+              "reply": "Respuesta al cliente",
+              "booking": null O { "date": "YYYY-MM-DD", "time": "HH:MM", "pax": 4, "name": "Nombre", "notes": "Zona preferida..." }
             }` 
           },
           { role: "user", content: userText },
@@ -57,12 +67,12 @@ export async function POST(request: Request) {
       });
 
       const aiData = JSON.parse(completion.choices[0].message.content || "{}");
-      const replyText = aiData.reply || "Perdona, me he perdido.";
+      const replyText = aiData.reply || "Perdona, no te he entendido.";
 
       if (aiData.booking) {
         await sql`
-          INSERT INTO bookings (client_phone, booking_date, booking_time, pax, client_name)
-          VALUES (${userPhone}, ${aiData.booking.date}, ${aiData.booking.time}, ${aiData.booking.pax}, ${aiData.booking.name})
+          INSERT INTO bookings (client_phone, booking_date, booking_time, pax, client_name, notes)
+          VALUES (${userPhone}, ${aiData.booking.date}, ${aiData.booking.time}, ${aiData.booking.pax}, ${aiData.booking.name}, ${aiData.booking.notes || ''})
         `;
       }
 
