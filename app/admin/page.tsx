@@ -1,6 +1,6 @@
 import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
-import Link from 'next/link';
+import Link from 'next/link'; // Importante para la navegación
 
 const sql = postgres(process.env.DATABASE_URL!, { ssl: 'require' });
 
@@ -51,12 +51,13 @@ export default async function AdminPage() {
           <section className="bg-zinc-900 border border-white/5 rounded-2xl p-5 shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-200">🤖 Estado del Bot</h2>
+              {/* Toggle Switch estilo iOS */}
               <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
                 <input type="checkbox" name="botActive" id="toggle" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" defaultChecked={config.is_bot_active}/>
                 <label htmlFor="toggle" className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-700 cursor-pointer"></label>
               </div>
             </div>
-            <p className="text-xs text-gray-500">Si lo apagas, Paco dejará de contestar mensajes.</p>
+            <p className="text-xs text-gray-500">Si lo apagas, Paco dejará de contestar mensajes nuevos. Ideal para vacaciones.</p>
           </section>
 
           {/* TARJETA 2: IDENTIDAD */}
@@ -69,13 +70,13 @@ export default async function AdminPage() {
             </div>
           </section>
 
-          {/* TARJETA 3: REGLAS DE ORO */}
+          {/* TARJETA 3: LOGÍSTICA (Estilo CoverManager) */}
           <section className="bg-zinc-900 border border-white/5 rounded-2xl p-5 space-y-4">
-            <h2 className="text-sm uppercase tracking-widest text-gray-500 font-bold mb-2">Logística</h2>
+            <h2 className="text-sm uppercase tracking-widest text-gray-500 font-bold mb-2">Logística y Zonas</h2>
             
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-gray-400 mb-1">Max Personas/Mesa</label>
+                <label className="block text-xs text-gray-400 mb-1">Max Pax/Grupo</label>
                 <input type="number" name="maxPax" defaultValue={config.max_pax_per_booking} className="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-center text-white" />
               </div>
               <div>
@@ -85,8 +86,9 @@ export default async function AdminPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">Zonas y Mesas</label>
+              <label className="block text-sm font-medium text-gray-400 mb-1">Distribución de Zonas</label>
               <textarea name="zones" rows={3} defaultValue={config.zones} className="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-white text-sm" placeholder="Ej: Terraza (5 mesas), Interior (10)..." />
+              <p className="text-[10px] text-gray-600 mt-1">El bot usará esto para asignar mesas.</p>
             </div>
           </section>
 
@@ -105,10 +107,10 @@ export default async function AdminPage() {
             </div>
           </section>
 
-          {/* BOTÓN GUARDAR STICKY (Ajustado para no chocar con el menú) */}
+          {/* BOTÓN GUARDAR FLOTANTE */}
           <div className="fixed bottom-24 left-0 right-0 px-6 z-20">
             <button type="submit" className="w-full max-w-md mx-auto bg-white text-black font-bold py-4 rounded-2xl shadow-lg hover:scale-105 transition transform flex justify-center items-center gap-2">
-              <span>💾 Guardar Cambios</span>
+              <span>💾 Guardar Configuración</span>
             </button>
           </div>
 
@@ -130,7 +132,7 @@ export default async function AdminPage() {
         </Link>
       </nav>
 
-      {/* ESTILOS EXTRA PARA EL TOGGLE */}
+      {/* CSS PARA EL TOGGLE SWITCH */}
       <style>{`
         .toggle-checkbox:checked { right: 0; border-color: #68D391; }
         .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
