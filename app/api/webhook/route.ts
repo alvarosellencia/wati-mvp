@@ -24,20 +24,27 @@ export async function POST(request: Request) {
 
       const configs = await sql`SELECT * FROM config LIMIT 1`;
       const config = configs[0];
-      const zones = JSON.parse(config.zones || '[]');
-      const activeZones = zones.filter((z:any) => z.active).map((z:any) => `${z.name} (${z.capacity} mesas)`).join(', ');
+      
+      // Parseamos zonas de forma segura
+      let zones = [];
+      try { zones = JSON.parse(config.zones); } catch(e) { zones = [] }
+      
+      const activeZones = zones
+        .filter((z:any) => z.active)
+        .map((z:any) => `- ${z.name}: ${z.capacity} mesas libres`)
+        .join('\n');
 
-      // --- LÓGICA DEL SEMÁFORO ---
+      // --- LÓGICA DEL SEMÁFORO INTELIGENTE ---
       let instruccionesModo = "";
       if (config.service_mode === 'closed') {
-        instruccionesModo = "EL RESTAURANTE ESTÁ COMPLETO/CERRADO. Rechaza amablemente cualquier intento de ir hoy.";
+        instruccionesModo = "⛔️ EL LOCAL ESTÁ COMPLETO O CERRADO. Rechaza amablemente cualquier visita hoy.";
       } else if (config.service_mode === 'waitlist') {
-        instruccionesModo = `MODO LISTA DE ESPERA ACTIVADO (Estilo tapeo andaluz).
-        NO aceptes reservas a horas fijas (ej: "a las 21:00").
-        DILE AL CLIENTE: "Ahora mismo no reservamos, funcionamos por orden de llegada. Hay una espera estimada de ${config.current_wait_time} minutos".
-        SI EL CLIENTE ACEPTA: Apúntalo en la lista (guarda la reserva con hora actual) y dile "Te he apuntado en la lista, vente ya".`;
+        instruccionesModo = `📝 MODO LISTA DE ESPERA (Vente que te apunto).
+        NO aceptes reservas a horas futuras.
+        DILE AL CLIENTE: "Ahora mismo funcionamos por orden de llegada. Hay unos ${config.current_wait_time} minutos de espera. ¿Quieres que te apunte en la lista para cuando llegues?".
+        SI DICE SÍ: Guarda la reserva con hora actual y dile "Apuntado. ¡Vente ya!".`;
       } else {
-        instruccionesModo = "MODO RESERVAS CLÁSICO. Acepta reservas a horas concretas si hay hueco.";
+        instruccionesModo = "✅ MODO RESERVAS ABIERTAS. Acepta reservas para hoy o futuros días.";
       }
 
       const completion = await openai.chat.completions.create({
@@ -48,14 +55,14 @@ export async function POST(request: Request) {
             role: "system", 
             content: `Eres Paco, del bar '${config.restaurant_name}'.
             
-            ESTADO ACTUAL DEL LOCAL:
+            ESTADO ACTUAL:
             ${instruccionesModo}
 
-            INFO DEL LOCAL:
-            - Zonas abiertas: ${activeZones}
+            ZONAS DISPONIBLES AHORA:
+            ${activeZones}
             
             OBJETIVO:
-            Gestionar al cliente según el MODO actual (Reserva vs Lista de Espera).
+            Gestionar al cliente según el MODO actual. Sé breve, directo y usa emojis.
             
             FORMATO JSON OBLIGATORIO:
             {
