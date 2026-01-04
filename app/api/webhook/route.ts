@@ -22,44 +22,45 @@ export async function POST(request: Request) {
       const userText = message.text.body;
       const userPhone = message.from;
 
-      // 1. CARGAMOS LA CONFIG PRO
       const configs = await sql`SELECT * FROM config LIMIT 1`;
       const config = configs[0];
+      const zones = JSON.parse(config.zones || '[]');
+      const activeZones = zones.filter((z:any) => z.active).map((z:any) => `${z.name} (${z.capacity} mesas)`).join(', ');
 
-      // --- CHEQUEO DE SEGURIDAD: ¿ESTÁ EL BOT ENCENDIDO? ---
-      if (!config.is_bot_active) {
-        console.log('💤 BOT APAGADO. Ignorando mensaje.');
-        return NextResponse.json({ success: true }); // No hacemos nada
+      // --- LÓGICA DEL SEMÁFORO ---
+      let instruccionesModo = "";
+      if (config.service_mode === 'closed') {
+        instruccionesModo = "EL RESTAURANTE ESTÁ COMPLETO/CERRADO. Rechaza amablemente cualquier intento de ir hoy.";
+      } else if (config.service_mode === 'waitlist') {
+        instruccionesModo = `MODO LISTA DE ESPERA ACTIVADO (Estilo tapeo andaluz).
+        NO aceptes reservas a horas fijas (ej: "a las 21:00").
+        DILE AL CLIENTE: "Ahora mismo no reservamos, funcionamos por orden de llegada. Hay una espera estimada de ${config.current_wait_time} minutos".
+        SI EL CLIENTE ACEPTA: Apúntalo en la lista (guarda la reserva con hora actual) y dile "Te he apuntado en la lista, vente ya".`;
+      } else {
+        instruccionesModo = "MODO RESERVAS CLÁSICO. Acepta reservas a horas concretas si hay hueco.";
       }
 
-      const ahora = new Date().toLocaleString("es-ES", { timeZone: "Europe/Madrid" });
-      console.log(`📩 MENSAJE (${config.restaurant_name}): ${userText}`);
-
-      // 2. PROMPT AVANZADO CON TODAS LAS REGLAS
       const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         response_format: { type: "json_object" },
         messages: [
           { 
             role: "system", 
-            content: `Eres el asistente virtual de '${config.restaurant_name}'.
-            MOMENTO ACTUAL: ${ahora}.
+            content: `Eres Paco, del bar '${config.restaurant_name}'.
             
-            📋 REGLAS DEL NEGOCIO (Respetar ESTRICTAMENTE):
-            - Horario: ${config.schedule}
-            - Días CERRADO: ${config.closed_days}
-            - Zonas disponibles: ${config.zones}
-            - MÁXIMO PERSONAS POR GRUPO: ${config.max_pax_per_booking} (Si piden más, diles amablemente que llamen por tlf para grupos grandes).
-            - Duración estándar de reserva: ${config.avg_booking_duration} minutos.
+            ESTADO ACTUAL DEL LOCAL:
+            ${instruccionesModo}
+
+            INFO DEL LOCAL:
+            - Zonas abiertas: ${activeZones}
             
-            TU OBJETIVO:
-            Gestionar reservas.
-            Si el cliente pide una zona específica (Terraza/Interior), intenta confirmarla en las notas.
+            OBJETIVO:
+            Gestionar al cliente según el MODO actual (Reserva vs Lista de Espera).
             
             FORMATO JSON OBLIGATORIO:
             {
-              "reply": "Respuesta al cliente",
-              "booking": null O { "date": "YYYY-MM-DD", "time": "HH:MM", "pax": 4, "name": "Nombre", "notes": "Zona preferida..." }
+              "reply": "Texto para WhatsApp",
+              "booking": null O { "date": "YYYY-MM-DD", "time": "HH:MM", "pax": 4, "name": "Nombre", "notes": "Modo: ${config.service_mode}" }
             }` 
           },
           { role: "user", content: userText },
@@ -72,7 +73,7 @@ export async function POST(request: Request) {
       if (aiData.booking) {
         await sql`
           INSERT INTO bookings (client_phone, booking_date, booking_time, pax, client_name, notes)
-          VALUES (${userPhone}, ${aiData.booking.date}, ${aiData.booking.time}, ${aiData.booking.pax}, ${aiData.booking.name}, ${aiData.booking.notes || ''})
+          VALUES (${userPhone}, ${aiData.booking.date}, ${aiData.booking.time}, ${aiData.booking.pax}, ${aiData.booking.name}, ${aiData.booking.notes})
         `;
       }
 
