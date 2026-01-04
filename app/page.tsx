@@ -1,7 +1,8 @@
+import { Suspense } from 'react'; // 👈 IMPORTANTE: Añadimos esta importación
 import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
 import Link from 'next/link';
-import DateSelector from './DateSelector'; // 👈 IMPORTAMOS LA PIEZA NUEVA
+import DateSelector from './DateSelector';
 
 const sql = postgres(process.env.DATABASE_URL!, { ssl: 'require' });
 
@@ -33,7 +34,7 @@ export default async function Home({ searchParams }: { searchParams: { date?: st
     ORDER BY booking_time ASC
   `;
 
-  // Formato bonito de fecha para el título (ej: "Lunes, 4 Enero")
+  // Formato bonito de fecha para el título
   const fechaVisual = new Date(selectedDate).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
   return (
@@ -54,8 +55,11 @@ export default async function Home({ searchParams }: { searchParams: { date?: st
           </div>
         </div>
 
-        {/* AQUÍ USAMOS EL COMPONENTE NUEVO INTERACTIVO */}
-        <DateSelector />
+        {/* 👇 AQUÍ ESTÁ EL CAMBIO: Envolvemos DateSelector en Suspense */}
+        <Suspense fallback={<div className="h-12 w-full bg-[#161616] rounded-xl animate-pulse"></div>}>
+          <DateSelector />
+        </Suspense>
+
       </header>
 
       {/* LISTA DE RESERVAS */}
@@ -103,7 +107,7 @@ export default async function Home({ searchParams }: { searchParams: { date?: st
         )}
       </main>
 
-      {/* NAVBAR UNIFICADO (Mismos iconos que Admin) */}
+      {/* NAVBAR UNIFICADO */}
       <nav className="fixed bottom-0 left-0 right-0 bg-[#0A0A0A]/90 backdrop-blur-xl border-t border-white/10 pb-8 pt-4 px-12 flex justify-between items-center z-50">
         <Link href="/" className="flex flex-col items-center gap-1.5 text-white transition-colors group">
           <div className="shadow-[0_0_15px_rgba(255,255,255,0.3)] rounded-full"><Icons.Calendar /></div>
