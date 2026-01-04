@@ -6,29 +6,49 @@ const sql = postgres(process.env.DATABASE_URL!, { ssl: 'require' });
 
 // --- ICONOS ---
 const Icons = {
-  Calendar: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>,
-  List: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>,
-  Lock: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>,
-  Sofa: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0z"/></svg>,
-  Sun: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2"/><path d="M12 21v2"/><path d="M4.22 4.22l1.42 1.42"/><path d="M18.36 18.36l1.42 1.42"/><path d="M1 12h2"/><path d="M21 12h2"/><path d="M4.22 19.78l1.42-1.42"/><path d="M18.36 5.64l1.42-1.42"/></svg>,
-  Beer: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 11h1a3 3 0 0 1 0 6h-1"/><path d="M9 12v6"/><path d="M13 12v6"/><path d="M14 5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2h8Z"/><path d="M6 7h12v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"/></svg>,
-  Save: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+  User: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  Users: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+  Plus: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  Clock: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  Chart: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+  Settings: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
 };
 
-export default async function AdminPage() {
+export default async function AdminPage({ searchParams }: { searchParams: { tab?: string } }) {
   const configs = await sql`SELECT * FROM config LIMIT 1`;
   const config = configs[0];
-  
-  // Parseo seguro
-  let zones: any[] = [];
-  try { zones = JSON.parse(config.zones); } catch (e) { zones = []; }
+  const tab = searchParams.tab || 'ops'; // 'ops' (Operativa) o 'config' (Configuración)
 
+  // 1. OBTENER DATOS REALES DE HOY
+  const hoy = new Date().toISOString().split('T')[0];
+  const bookingsHoy = await sql`SELECT * FROM bookings WHERE booking_date = ${hoy}`;
+
+  // 2. CÁLCULOS MATEMÁTICOS (El gráfico de gasolina)
+  let zones: any[] = [];
+  try { zones = JSON.parse(config.zones); } catch { zones = []; }
+  
+  // Capacidad Total del Local (Suma de los sliders)
+  const totalCapacity = zones.reduce((acc, zone) => zone.active ? acc + zone.capacity : acc, 0);
+  
+  // Ocupación Actual (Suma de personas en reservas de hoy)
+  // NOTA: Para hacerlo perfecto en el futuro sumaríamos solo las de "ahora", pero para el MVP sumamos todo el día o filtramos por hora.
+  // Simplificación MVP: Sumamos todos los PAX de hoy.
+  const totalPaxReserved = bookingsHoy.reduce((acc, b) => acc + b.pax, 0);
+  
+  // Porcentaje de llenado
+  const occupancyPercent = totalCapacity > 0 ? Math.round((totalPaxReserved / totalCapacity) * 100) : 0;
+  const occupancyColor = occupancyPercent > 90 ? 'bg-red-500' : occupancyPercent > 60 ? 'bg-yellow-500' : 'bg-green-500';
+
+
+  // --- ACTIONS ---
+
+  // A) Guardar Configuración General
   async function updateConfig(formData: FormData) {
     'use server';
     const mode = formData.get('mode') as string;
     const waitTime = formData.get('waitTime') as string;
+    const autoSwitch = formData.get('autoSwitch') as string;
     
-    // Reconstruimos el JSON de zonas
     const newZones = zones.map((z: any, index: number) => ({
       name: z.name,
       capacity: Number(formData.get(`cap_${index}`)),
@@ -39,171 +59,211 @@ export default async function AdminPage() {
       UPDATE config 
       SET service_mode = ${mode},
           current_wait_time = ${waitTime},
+          auto_switch_time = ${autoSwitch},
           zones = ${JSON.stringify(newZones)}
       WHERE id = ${config.id}
     `;
     revalidatePath('/admin');
   }
 
-  // Texto explicativo del modo
-  const getModeDescription = (mode: string) => {
-    if (mode === 'booking') return "El bot aceptará reservas para cualquier día.";
-    if (mode === 'waitlist') return "El bot NO reserva. Solo apunta en lista de espera para HOY.";
-    return "El bot rechazará a todos amablemente.";
-  };
+  // B) Añadir Walk-in (Cliente manual)
+  async function addWalkIn(formData: FormData) {
+    'use server';
+    const name = formData.get('name') as string;
+    const pax = formData.get('pax') as string;
+    const phone = formData.get('phone') as string; // Opcional
+    const notes = "👤 Walk-in (Manual)";
+    
+    const timeNow = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+    await sql`
+      INSERT INTO bookings (client_name, booking_date, booking_time, pax, client_phone, notes)
+      VALUES (${name}, ${hoy}, ${timeNow}, ${pax}, ${phone || ''}, ${notes})
+    `;
+    revalidatePath('/admin');
+  }
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white font-sans pb-32">
       
-      {/* HEADER SIMPLE */}
-      <div className="sticky top-0 z-30 bg-[#0A0A0A]/90 backdrop-blur-xl border-b border-white/5 px-6 py-5">
-        <h1 className="text-lg font-bold">Configuración</h1>
-        <p className="text-gray-400 text-xs mt-1">Controla el cerebro de Paco</p>
+      {/* HEADER DE PESTAÑAS */}
+      <div className="sticky top-0 z-30 bg-[#0A0A0A]/90 backdrop-blur-xl border-b border-white/5">
+        <div className="flex justify-between items-center p-4">
+          <h1 className="text-lg font-bold bg-gradient-to-r from-blue-400 to-white bg-clip-text text-transparent">
+            {config.restaurant_name}
+          </h1>
+          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${config.service_mode === 'booking' ? 'bg-green-900/50 text-green-400' : config.service_mode === 'waitlist' ? 'bg-yellow-900/50 text-yellow-400' : 'bg-red-900/50 text-red-400'}`}>
+            {config.service_mode}
+          </span>
+        </div>
+
+        {/* TABS SELECTOR */}
+        <div className="flex px-4 gap-4 text-sm font-medium">
+          <Link href="/admin?tab=ops" className={`pb-3 border-b-2 transition-colors ${tab === 'ops' ? 'border-blue-500 text-white' : 'border-transparent text-gray-500'}`}>
+            Operativa Diaria
+          </Link>
+          <Link href="/admin?tab=config" className={`pb-3 border-b-2 transition-colors ${tab === 'config' ? 'border-blue-500 text-white' : 'border-transparent text-gray-500'}`}>
+            Configuración
+          </Link>
+          <span className="text-gray-600 pb-3 ml-auto cursor-not-allowed">Analítica 🔒</span>
+        </div>
       </div>
 
-      <main className="max-w-md mx-auto p-6 space-y-8 mt-2">
-        <form action={updateConfig}>
+      <main className="max-w-md mx-auto p-5 mt-2 space-y-8">
 
-          {/* 1. MODO DE OPERACIÓN */}
-          <section>
-            <div className="flex justify-between items-end mb-4 ml-1">
-              <h2 className="text-xs text-gray-500 font-bold uppercase tracking-widest">Estado del Servicio</h2>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-3">
-              <label className="group cursor-pointer">
-                <input type="radio" name="mode" value="booking" defaultChecked={config.service_mode === 'booking'} className="peer hidden" />
-                <div className="h-24 rounded-2xl bg-[#161616] border border-white/10 peer-checked:bg-blue-600 peer-checked:border-blue-500 transition-all flex flex-col items-center justify-center gap-2">
-                  <Icons.Calendar />
-                  <span className="text-[10px] font-bold uppercase">Reservas</span>
+        {/* ================= PESTAÑA 1: OPERATIVA DIARIA ================= */}
+        {tab === 'ops' && (
+          <>
+            {/* 1. KPI VISUAL (GASOLINA) */}
+            <section className="bg-[#161616] border border-white/5 rounded-2xl p-5 shadow-2xl">
+              <div className="flex justify-between items-end mb-2">
+                <div>
+                  <h2 className="text-xs text-gray-400 uppercase font-bold tracking-widest">Ocupación Hoy</h2>
+                  <p className="text-2xl font-bold text-white mt-1">{totalPaxReserved} <span className="text-gray-500 text-sm font-normal">/ {totalCapacity} pax</span></p>
                 </div>
-              </label>
-
-              <label className="group cursor-pointer">
-                <input type="radio" name="mode" value="waitlist" defaultChecked={config.service_mode === 'waitlist'} className="peer hidden" />
-                <div className="h-24 rounded-2xl bg-[#161616] border border-white/10 peer-checked:bg-orange-500 peer-checked:border-orange-400 transition-all flex flex-col items-center justify-center gap-2">
-                  <Icons.List />
-                  <span className="text-[10px] font-bold uppercase">Lista Espera</span>
-                </div>
-              </label>
-
-              <label className="group cursor-pointer">
-                <input type="radio" name="mode" value="closed" defaultChecked={config.service_mode === 'closed'} className="peer hidden" />
-                <div className="h-24 rounded-2xl bg-[#161616] border border-white/10 peer-checked:bg-red-600 peer-checked:border-red-500 transition-all flex flex-col items-center justify-center gap-2">
-                  <Icons.Lock />
-                  <span className="text-[10px] font-bold uppercase">Cerrado</span>
-                </div>
-              </label>
-            </div>
-
-            {/* Explicación Dinámica */}
-            <div className="mt-3 bg-white/5 rounded-lg p-3 border border-white/5">
-              <p className="text-xs text-gray-400 flex gap-2">
-                💡 <span className="text-gray-300">{getModeDescription(config.service_mode)}</span>
-              </p>
-            </div>
-
-            {/* Input Minutos (visible solo si espera) */}
-            {config.service_mode === 'waitlist' && (
-              <div className="mt-4 flex items-center justify-between bg-[#161616] p-4 rounded-xl border border-orange-500/30 animate-in fade-in slide-in-from-top-2">
-                <span className="text-sm font-medium text-orange-400">Tiempo de espera estimado</span>
-                <div className="flex items-center gap-2 bg-black px-3 py-1 rounded border border-white/10">
-                  <input type="number" name="waitTime" defaultValue={config.current_wait_time} className="w-10 bg-transparent text-right text-white font-mono focus:outline-none" />
-                  <span className="text-xs text-gray-500">min</span>
+                <div className="text-right">
+                  <span className={`text-xl font-bold ${occupancyPercent > 90 ? 'text-red-400' : occupancyPercent > 60 ? 'text-yellow-400' : 'text-green-400'}`}>
+                    {occupancyPercent}%
+                  </span>
                 </div>
               </div>
-            )}
-          </section>
+              
+              {/* Barra de Progreso */}
+              <div className="w-full h-3 bg-gray-800 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full ${occupancyColor} transition-all duration-1000 ease-out`} 
+                  style={{ width: `${Math.min(occupancyPercent, 100)}%` }}
+                ></div>
+              </div>
+              <p className="text-[10px] text-gray-500 mt-2 text-right">Basado en reservas activas vs capacidad configurada</p>
+            </section>
 
-          {/* 2. ZONAS (Sliders Gordos) */}
-          <section>
-            <h2 className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-4 ml-1 mt-8">Capacidad (Mesas Totales)</h2>
-            <div className="space-y-4">
-              {zones.map((zone: any, index: number) => {
-                const Icon = index === 0 ? Icons.Sofa : index === 1 ? Icons.Sun : Icons.Beer;
-                return (
-                  <div key={index} className="bg-[#161616] border border-white/5 rounded-2xl p-5">
-                    <div className="flex justify-between items-center mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-xl bg-white/5 text-gray-400`}>
-                          <Icon />
-                        </div>
-                        <span className="font-medium text-white">{zone.name}</span>
-                      </div>
-                      
-                      <div className="relative inline-block w-11 h-6">
-                        <input type="checkbox" name={`active_${index}`} id={`toggle_${index}`} className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer" defaultChecked={zone.active}/>
-                        <label htmlFor={`toggle_${index}`} className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-800 cursor-pointer border border-white/5"></label>
-                      </div>
+            {/* 2. WALK-IN (AÑADIR MANUAL) */}
+            <section>
+              <h2 className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-3 ml-1">Llega Cliente (Walk-in)</h2>
+              <form action={addWalkIn} className="bg-[#161616] border border-white/5 rounded-2xl p-4 space-y-3">
+                
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="text-[10px] text-gray-400 mb-1 block">Nombre (Para gritarle)</label>
+                    <div className="flex items-center bg-black border border-white/10 rounded-xl px-3 py-2">
+                      <Icons.User />
+                      <input name="name" placeholder="Ej: Juan Camisa Azul" required className="bg-transparent w-full ml-2 text-sm focus:outline-none" />
                     </div>
+                  </div>
+                  <div className="w-24">
+                    <label className="text-[10px] text-gray-400 mb-1 block">Pax</label>
+                    <div className="flex items-center bg-black border border-white/10 rounded-xl px-3 py-2">
+                      <Icons.Users />
+                      <input name="pax" type="number" defaultValue="2" className="bg-transparent w-full ml-2 text-sm focus:outline-none text-center" />
+                    </div>
+                  </div>
+                </div>
 
-                    <div className={!zone.active ? 'opacity-20 pointer-events-none' : ''}>
-                      <div className="flex justify-between text-xs mb-3 text-gray-400">
-                        <span>Límite para el Bot</span>
-                        <span className="text-white font-mono bg-white/10 px-2 py-0.5 rounded">{zone.capacity} mesas</span>
-                      </div>
+                <div>
+                  <label className="text-[10px] text-gray-400 mb-1 block">Teléfono (Opcional - Para avisarle)</label>
+                  <input name="phone" type="tel" placeholder="Si quiere WhatsApp..." className="w-full bg-black border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+
+                <button type="submit" className="w-full bg-white text-black font-bold py-3 rounded-xl hover:scale-[1.02] transition-transform flex justify-center items-center gap-2 text-sm">
+                  <Icons.Plus />
+                  <span>Apuntar en la Mesa/Lista</span>
+                </button>
+              </form>
+            </section>
+          </>
+        )}
+
+        {/* ================= PESTAÑA 2: CONFIGURACIÓN ================= */}
+        {tab === 'config' && (
+          <form action={updateConfig} className="space-y-8">
+            
+            {/* MODO DE SERVICIO */}
+            <section>
+              <h2 className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-4">Modo Actual</h2>
+              <div className="grid grid-cols-3 gap-2">
+                {['booking', 'waitlist', 'closed'].map((m) => (
+                  <label key={m} className={`cursor-pointer border border-white/10 rounded-xl p-3 flex flex-col items-center justify-center gap-1 transition-all ${config.service_mode === m ? 'bg-blue-600 border-blue-500' : 'bg-[#161616]'}`}>
+                    <input type="radio" name="mode" value={m} defaultChecked={config.service_mode === m} className="hidden" />
+                    <span className="text-xl capitalize">{m === 'booking' ? '📅' : m === 'waitlist' ? '📝' : '🔒'}</span>
+                    <span className="text-[9px] font-bold uppercase">{m === 'booking' ? 'Reservas' : m === 'waitlist' ? 'Espera' : 'Cerrado'}</span>
+                  </label>
+                ))}
+              </div>
+
+              {/* AUTOMATIZACIÓN (NUEVO) */}
+              <div className="mt-4 bg-[#161616] p-4 rounded-xl border border-white/5 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-bold text-white flex items-center gap-2"><Icons.Clock /> Auto-Lista de Espera</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">A esta hora, pasa solo a 'Lista de Espera'.</p>
+                </div>
+                <input 
+                  type="time" 
+                  name="autoSwitch" 
+                  defaultValue={config.auto_switch_time} 
+                  className="bg-black border border-white/20 rounded-lg px-2 py-1 text-white text-sm" 
+                />
+              </div>
+
+              {/* Tiempo de espera manual */}
+              {config.service_mode === 'waitlist' && (
+                <div className="mt-2 bg-orange-900/20 p-3 rounded-xl border border-orange-500/30 flex justify-between items-center">
+                  <span className="text-xs text-orange-300">Tiempo estimado actual</span>
+                  <div className="flex items-center gap-1">
+                    <input type="number" name="waitTime" defaultValue={config.current_wait_time} className="w-12 bg-black border border-white/10 rounded text-center text-sm" />
+                    <span className="text-xs">min</span>
+                  </div>
+                </div>
+              )}
+            </section>
+
+            {/* CAPACIDAD TOTAL (SLIDERS) */}
+            <section>
+              <h2 className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-4">Inventario Total (Mesas)</h2>
+              <div className="space-y-3">
+                {zones.map((zone: any, index: number) => (
+                  <div key={index} className="bg-[#161616] border border-white/5 rounded-xl p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-medium text-sm">{zone.name}</span>
+                      <input type="checkbox" name={`active_${index}`} defaultChecked={zone.active} className="toggle-checkbox" />
+                    </div>
+                    <div className="flex items-center gap-3">
                       <input 
                         type="range" 
                         name={`cap_${index}`} 
-                        min="0" 
-                        max="20" 
+                        min="0" max="50" 
                         defaultValue={zone.capacity} 
-                        className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-white touch-none" 
+                        className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-white" 
                       />
+                      <span className="text-xs font-mono bg-white/10 px-2 py-1 rounded w-16 text-center">{zone.capacity} pax</span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </section>
+                ))}
+              </div>
+            </section>
 
-          {/* BOTÓN FLOTANTE */}
-          <div className="fixed bottom-24 left-0 right-0 px-6 z-40 flex justify-center">
-            <button type="submit" className="w-full max-w-sm bg-white text-black font-bold py-4 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all flex justify-center items-center gap-2">
-              <Icons.Save />
-              <span>Aplicar y Guardar</span>
-            </button>
-          </div>
-        </form>
+            <div className="fixed bottom-24 left-0 right-0 px-6 flex justify-center pointer-events-none">
+              <button type="submit" className="pointer-events-auto bg-white text-black font-bold py-3 px-8 rounded-full shadow-xl hover:scale-105 transition-transform flex items-center gap-2 text-sm">
+                <Icons.Settings />
+                <span>Guardar Cambios</span>
+              </button>
+            </div>
+          </form>
+        )}
+
       </main>
 
       {/* NAVBAR UNIFICADO */}
       <nav className="fixed bottom-0 left-0 right-0 bg-[#0A0A0A]/90 backdrop-blur-xl border-t border-white/10 pb-8 pt-4 px-12 flex justify-between items-center z-50">
-        <Link href="/" className="flex flex-col items-center gap-1.5 text-gray-500 hover:text-white transition-colors group">
-          <div className="group-hover:-translate-y-1 transition-transform duration-300"><Icons.Calendar /></div>
+        <Link href="/" className="flex flex-col items-center gap-1.5 text-gray-500 hover:text-white transition-colors">
+          <Icons.Clock />
           <span className="text-[10px] font-bold tracking-widest">RESERVAS</span>
         </Link>
-        <Link href="/admin" className="flex flex-col items-center gap-1.5 text-white transition-colors group">
-          <div className="shadow-[0_0_15px_rgba(255,255,255,0.3)] rounded-full"><Icons.List /></div>
-          <span className="text-[10px] font-bold tracking-widest">CONFIG</span>
+        <Link href="/admin" className="flex flex-col items-center gap-1.5 text-white">
+          <Icons.Chart />
+          <span className="text-[10px] font-bold tracking-widest">GESTIÓN</span>
         </Link>
       </nav>
-
-      <style>{`
-        .toggle-checkbox:checked { right: 0; border-color: #3b82f6; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #3b82f6; }
-        .toggle-checkbox { right: 0; z-index: 10; border-color: #e5e7eb; transition: all 0.3s; right: 1.25rem; }
-        .toggle-label { width: 2.75rem; }
-        /* SLIDER GORDO PARA DEDOS */
-        input[type=range]::-webkit-slider-thumb { 
-          -webkit-appearance: none; 
-          height: 28px; 
-          width: 28px; 
-          border-radius: 50%; 
-          background: #ffffff; 
-          box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
-          margin-top: -12px; 
-        }
-        input[type=range]::-moz-range-thumb { 
-          height: 28px; 
-          width: 28px; 
-          border-radius: 50%; 
-          background: #ffffff; 
-          box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
-          border: none; 
-        }
-        input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; }
-      `}</style>
     </div>
   );
 }
