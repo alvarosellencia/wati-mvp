@@ -11,9 +11,13 @@ async function getBookings() {
 
 async function deleteBooking(formData: FormData) {
   'use server';
-  const id = formData.get('id');
-  await sql`DELETE FROM bookings WHERE id = ${id}`;
-  revalidatePath('/');
+  // 🔽 AQUÍ ESTABA EL ERROR: Añadimos "as string" para calmar a TypeScript
+  const id = formData.get('id') as string; 
+  
+  if (id) {
+    await sql`DELETE FROM bookings WHERE id = ${id}`;
+    revalidatePath('/');
+  }
 }
 
 // --- COMPONENTE VISUAL (Frontend) ---
