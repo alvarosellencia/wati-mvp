@@ -19,8 +19,10 @@ export default async function AdminPage() {
   const configs = await sql`SELECT * FROM config LIMIT 1`;
   const config = configs[0];
   
-  // Parseo seguro de zonas
-  let zones = [];
+  // --- AQUÍ ESTABA EL ERROR ---
+  // Añadimos ": any[]" para que TypeScript sepa que es una lista de cualquier cosa
+  let zones: any[] = [];
+  
   try {
     zones = JSON.parse(config.zones);
   } catch (e) {
@@ -114,7 +116,7 @@ export default async function AdminPage() {
               </label>
             </div>
 
-            {/* Input de Minutos (Solo visual si Lista Espera, pero funcional siempre) */}
+            {/* Input de Minutos */}
             <div className={`mt-4 bg-[#161616] border border-white/5 rounded-xl p-4 flex items-center justify-between transition-all duration-500 ${config.service_mode !== 'waitlist' ? 'opacity-50 grayscale' : 'opacity-100'}`}>
               <span className="text-sm text-gray-300 font-medium">Tiempo de espera actual</span>
               <div className="flex items-center gap-2 bg-black rounded-lg px-3 py-1 border border-white/10">
