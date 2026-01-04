@@ -1,11 +1,11 @@
 import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import DateSelector from './DateSelector'; // 👈 IMPORTAMOS LA PIEZA NUEVA
 
 const sql = postgres(process.env.DATABASE_URL!, { ssl: 'require' });
 
-// --- ICONOS UNIFICADOS (El mismo set que en Admin) ---
+// --- ICONOS UNIFICADOS ---
 const Icons = {
   Calendar: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>,
   List: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>,
@@ -19,13 +19,6 @@ async function deleteBooking(formData: FormData) {
     await sql`DELETE FROM bookings WHERE id = ${id}`;
     revalidatePath('/');
   }
-}
-
-// Acción para cambiar de día
-async function changeDate(formData: FormData) {
-  'use server';
-  const date = formData.get('date');
-  redirect(`/?date=${date}`);
 }
 
 export default async function Home({ searchParams }: { searchParams: { date?: string } }) {
@@ -50,30 +43,19 @@ export default async function Home({ searchParams }: { searchParams: { date?: st
       <header className="sticky top-0 z-10 bg-[#0A0A0A]/90 backdrop-blur-xl border-b border-white/5 p-5">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <p className="text-gray-400 text-[10px] uppercase tracking-widest font-bold">Reservas para</p>
+            <p className="text-gray-400 text-[10px] uppercase tracking-widest font-bold">Reservas del</p>
             <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent capitalize">
               {fechaVisual}
             </h1>
           </div>
           <div className="text-right">
             <span className="text-3xl font-bold text-white">{bookings.length}</span>
-            <p className="text-gray-500 text-[10px] uppercase">Mesa(s)</p>
+            <p className="text-gray-500 text-[10px] uppercase">Mesas</p>
           </div>
         </div>
 
-        {/* SELECTOR DE FECHA NATIVO */}
-        <form action={changeDate} className="relative">
-          <input 
-            type="date" 
-            name="date" 
-            defaultValue={selectedDate}
-            onChange={(e) => e.target.form?.requestSubmit()} // Truco: Auto-envía al cambiar
-            className="w-full bg-[#161616] border border-white/10 rounded-xl p-3 text-white scheme-dark cursor-pointer focus:outline-none focus:border-blue-500 transition-colors"
-          />
-          <div className="absolute right-4 top-3.5 text-gray-400 pointer-events-none">
-            <Icons.Calendar />
-          </div>
-        </form>
+        {/* AQUÍ USAMOS EL COMPONENTE NUEVO INTERACTIVO */}
+        <DateSelector />
       </header>
 
       {/* LISTA DE RESERVAS */}
@@ -82,6 +64,7 @@ export default async function Home({ searchParams }: { searchParams: { date?: st
           <div className="text-center py-20 opacity-30 flex flex-col items-center gap-4">
             <Icons.Calendar />
             <p>No hay reservas para este día.</p>
+            <p className="text-xs text-gray-500">Cambia la fecha arriba para ver otros días.</p>
           </div>
         ) : (
           bookings.map((booking) => (
@@ -120,7 +103,7 @@ export default async function Home({ searchParams }: { searchParams: { date?: st
         )}
       </main>
 
-      {/* NAVBAR UNIFICADO */}
+      {/* NAVBAR UNIFICADO (Mismos iconos que Admin) */}
       <nav className="fixed bottom-0 left-0 right-0 bg-[#0A0A0A]/90 backdrop-blur-xl border-t border-white/10 pb-8 pt-4 px-12 flex justify-between items-center z-50">
         <Link href="/" className="flex flex-col items-center gap-1.5 text-white transition-colors group">
           <div className="shadow-[0_0_15px_rgba(255,255,255,0.3)] rounded-full"><Icons.Calendar /></div>
