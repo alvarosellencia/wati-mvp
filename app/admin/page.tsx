@@ -17,32 +17,20 @@ const Icons = {
 export default async function AdminPage({ searchParams }: { searchParams: { tab?: string } }) {
   const configs = await sql`SELECT * FROM config LIMIT 1`;
   const config = configs[0];
-  const tab = searchParams.tab || 'ops'; // 'ops' (Operativa) o 'config' (Configuración)
+  const tab = searchParams.tab || 'ops';
 
-  // 1. OBTENER DATOS REALES DE HOY
   const hoy = new Date().toISOString().split('T')[0];
   const bookingsHoy = await sql`SELECT * FROM bookings WHERE booking_date = ${hoy}`;
 
-  // 2. CÁLCULOS MATEMÁTICOS (El gráfico de gasolina)
   let zones: any[] = [];
   try { zones = JSON.parse(config.zones); } catch { zones = []; }
   
-  // Capacidad Total del Local (Suma de los sliders)
   const totalCapacity = zones.reduce((acc, zone) => zone.active ? acc + zone.capacity : acc, 0);
-  
-  // Ocupación Actual (Suma de personas en reservas de hoy)
-  // NOTA: Para hacerlo perfecto en el futuro sumaríamos solo las de "ahora", pero para el MVP sumamos todo el día o filtramos por hora.
-  // Simplificación MVP: Sumamos todos los PAX de hoy.
   const totalPaxReserved = bookingsHoy.reduce((acc, b) => acc + b.pax, 0);
-  
-  // Porcentaje de llenado
   const occupancyPercent = totalCapacity > 0 ? Math.round((totalPaxReserved / totalCapacity) * 100) : 0;
   const occupancyColor = occupancyPercent > 90 ? 'bg-red-500' : occupancyPercent > 60 ? 'bg-yellow-500' : 'bg-green-500';
 
-
   // --- ACTIONS ---
-
-  // A) Guardar Configuración General
   async function updateConfig(formData: FormData) {
     'use server';
     const mode = formData.get('mode') as string;
@@ -66,14 +54,12 @@ export default async function AdminPage({ searchParams }: { searchParams: { tab?
     revalidatePath('/admin');
   }
 
-  // B) Añadir Walk-in (Cliente manual)
   async function addWalkIn(formData: FormData) {
     'use server';
     const name = formData.get('name') as string;
     const pax = formData.get('pax') as string;
-    const phone = formData.get('phone') as string; // Opcional
+    const phone = formData.get('phone') as string;
     const notes = "👤 Walk-in (Manual)";
-    
     const timeNow = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
     await sql`
@@ -128,12 +114,8 @@ export default async function AdminPage({ searchParams }: { searchParams: { tab?
                 </div>
               </div>
               
-              {/* Barra de Progreso */}
               <div className="w-full h-3 bg-gray-800 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full ${occupancyColor} transition-all duration-1000 ease-out`} 
-                  style={{ width: `${Math.min(occupancyPercent, 100)}%` }}
-                ></div>
+                <div className={`h-full ${occupancyColor} transition-all duration-1000 ease-out`} style={{ width: `${Math.min(occupancyPercent, 100)}%` }}></div>
               </div>
               <p className="text-[10px] text-gray-500 mt-2 text-right">Basado en reservas activas vs capacidad configurada</p>
             </section>
@@ -142,18 +124,17 @@ export default async function AdminPage({ searchParams }: { searchParams: { tab?
             <section>
               <h2 className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-3 ml-1">Llega Cliente (Walk-in)</h2>
               <form action={addWalkIn} className="bg-[#161616] border border-white/5 rounded-2xl p-4 space-y-3">
-                
                 <div className="flex gap-3">
                   <div className="flex-1">
-                    <label className="text-[10px] text-gray-400 mb-1 block">Nombre (Para gritarle)</label>
-                    <div className="flex items-center bg-black border border-white/10 rounded-xl px-3 py-2">
+                    <label className="text-[10px] text-gray-400 mb-1 block">Nombre</label>
+                    <div className="flex items-center bg-black border border-white/10 rounded-xl px-3 py-2 focus-within:border-blue-500">
                       <Icons.User />
-                      <input name="name" placeholder="Ej: Juan Camisa Azul" required className="bg-transparent w-full ml-2 text-sm focus:outline-none" />
+                      <input name="name" placeholder="Ej: Juan Camisa Azul" required className="bg-transparent w-full ml-2 text-sm focus:outline-none placeholder-gray-600" />
                     </div>
                   </div>
                   <div className="w-24">
                     <label className="text-[10px] text-gray-400 mb-1 block">Pax</label>
-                    <div className="flex items-center bg-black border border-white/10 rounded-xl px-3 py-2">
+                    <div className="flex items-center bg-black border border-white/10 rounded-xl px-3 py-2 focus-within:border-blue-500">
                       <Icons.Users />
                       <input name="pax" type="number" defaultValue="2" className="bg-transparent w-full ml-2 text-sm focus:outline-none text-center" />
                     </div>
@@ -161,13 +142,13 @@ export default async function AdminPage({ searchParams }: { searchParams: { tab?
                 </div>
 
                 <div>
-                  <label className="text-[10px] text-gray-400 mb-1 block">Teléfono (Opcional - Para avisarle)</label>
-                  <input name="phone" type="tel" placeholder="Si quiere WhatsApp..." className="w-full bg-black border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                  <label className="text-[10px] text-gray-400 mb-1 block">Teléfono (Opcional)</label>
+                  <input name="phone" type="tel" placeholder="Para enviarle WhatsApp..." className="w-full bg-black border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500 placeholder-gray-600" />
                 </div>
 
-                <button type="submit" className="w-full bg-white text-black font-bold py-3 rounded-xl hover:scale-[1.02] transition-transform flex justify-center items-center gap-2 text-sm">
+                <button type="submit" className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 active:scale-[0.98] transition-all flex justify-center items-center gap-2 text-sm shadow-lg">
                   <Icons.Plus />
-                  <span>Apuntar en la Mesa/Lista</span>
+                  <span>Apuntar en la Mesa</span>
                 </button>
               </form>
             </section>
@@ -183,34 +164,28 @@ export default async function AdminPage({ searchParams }: { searchParams: { tab?
               <h2 className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-4">Modo Actual</h2>
               <div className="grid grid-cols-3 gap-2">
                 {['booking', 'waitlist', 'closed'].map((m) => (
-                  <label key={m} className={`cursor-pointer border border-white/10 rounded-xl p-3 flex flex-col items-center justify-center gap-1 transition-all ${config.service_mode === m ? 'bg-blue-600 border-blue-500' : 'bg-[#161616]'}`}>
-                    <input type="radio" name="mode" value={m} defaultChecked={config.service_mode === m} className="hidden" />
-                    <span className="text-xl capitalize">{m === 'booking' ? '📅' : m === 'waitlist' ? '📝' : '🔒'}</span>
-                    <span className="text-[9px] font-bold uppercase">{m === 'booking' ? 'Reservas' : m === 'waitlist' ? 'Espera' : 'Cerrado'}</span>
+                  <label key={m} className={`cursor-pointer border border-white/10 rounded-xl p-3 flex flex-col items-center justify-center gap-1 transition-all relative overflow-hidden ${config.service_mode === m ? 'bg-blue-600 border-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.4)]' : 'bg-[#161616] active:scale-95'}`}>
+                    <input type="radio" name="mode" value={m} defaultChecked={config.service_mode === m} className="peer hidden" />
+                    <span className="text-xl capitalize relative z-10">{m === 'booking' ? '📅' : m === 'waitlist' ? '📝' : '🔒'}</span>
+                    <span className="text-[9px] font-bold uppercase relative z-10">{m === 'booking' ? 'Reservas' : m === 'waitlist' ? 'Espera' : 'Cerrado'}</span>
                   </label>
                 ))}
               </div>
 
-              {/* AUTOMATIZACIÓN (NUEVO) */}
+              {/* AUTOMATIZACIÓN */}
               <div className="mt-4 bg-[#161616] p-4 rounded-xl border border-white/5 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-bold text-white flex items-center gap-2"><Icons.Clock /> Auto-Lista de Espera</p>
                   <p className="text-[10px] text-gray-400 mt-0.5">A esta hora, pasa solo a 'Lista de Espera'.</p>
                 </div>
-                <input 
-                  type="time" 
-                  name="autoSwitch" 
-                  defaultValue={config.auto_switch_time} 
-                  className="bg-black border border-white/20 rounded-lg px-2 py-1 text-white text-sm" 
-                />
+                <input type="time" name="autoSwitch" defaultValue={config.auto_switch_time} className="bg-black border border-white/20 rounded-lg px-2 py-1 text-white text-sm focus:outline-none focus:border-blue-500" />
               </div>
 
-              {/* Tiempo de espera manual */}
               {config.service_mode === 'waitlist' && (
-                <div className="mt-2 bg-orange-900/20 p-3 rounded-xl border border-orange-500/30 flex justify-between items-center">
+                <div className="mt-2 bg-orange-900/20 p-3 rounded-xl border border-orange-500/30 flex justify-between items-center animate-in fade-in slide-in-from-top-2">
                   <span className="text-xs text-orange-300">Tiempo estimado actual</span>
                   <div className="flex items-center gap-1">
-                    <input type="number" name="waitTime" defaultValue={config.current_wait_time} className="w-12 bg-black border border-white/10 rounded text-center text-sm" />
+                    <input type="number" name="waitTime" defaultValue={config.current_wait_time} className="w-12 bg-black border border-white/10 rounded text-center text-sm text-white" />
                     <span className="text-xs">min</span>
                   </div>
                 </div>
@@ -222,18 +197,25 @@ export default async function AdminPage({ searchParams }: { searchParams: { tab?
               <h2 className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-4">Inventario Total (Mesas)</h2>
               <div className="space-y-3">
                 {zones.map((zone: any, index: number) => (
-                  <div key={index} className="bg-[#161616] border border-white/5 rounded-xl p-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium text-sm">{zone.name}</span>
-                      <input type="checkbox" name={`active_${index}`} defaultChecked={zone.active} className="toggle-checkbox" />
+                  <div key={index} className="bg-[#161616] border border-white/5 rounded-xl p-4 transition-colors hover:border-white/10">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="font-medium text-sm text-white">{zone.name}</span>
+                      
+                      {/* INTERRUPTOR CSS PURO (FUNCIONA AL INSTANTE) */}
+                      <div className="relative w-11 h-6">
+                        <input type="checkbox" id={`toggle_${index}`} name={`active_${index}`} className="peer sr-only" defaultChecked={zone.active} />
+                        <label htmlFor={`toggle_${index}`} className="block h-6 w-11 rounded-full bg-gray-700 peer-focus:outline-none peer-checked:bg-blue-600 transition-colors cursor-pointer"></label>
+                        <span className="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-full pointer-events-none"></span>
+                      </div>
                     </div>
+
                     <div className="flex items-center gap-3">
                       <input 
                         type="range" 
                         name={`cap_${index}`} 
                         min="0" max="50" 
                         defaultValue={zone.capacity} 
-                        className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-white" 
+                        className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-white" 
                       />
                       <span className="text-xs font-mono bg-white/10 px-2 py-1 rounded w-16 text-center">{zone.capacity} pax</span>
                     </div>
@@ -243,9 +225,9 @@ export default async function AdminPage({ searchParams }: { searchParams: { tab?
             </section>
 
             <div className="fixed bottom-24 left-0 right-0 px-6 flex justify-center pointer-events-none">
-              <button type="submit" className="pointer-events-auto bg-white text-black font-bold py-3 px-8 rounded-full shadow-xl hover:scale-105 transition-transform flex items-center gap-2 text-sm">
+              <button type="submit" className="pointer-events-auto bg-white text-black font-bold py-4 px-10 rounded-full shadow-[0_10px_40px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 transition-all flex items-center gap-2 text-sm">
                 <Icons.Settings />
-                <span>Guardar Cambios</span>
+                <span>Guardar Configuración</span>
               </button>
             </div>
           </form>
@@ -253,9 +235,9 @@ export default async function AdminPage({ searchParams }: { searchParams: { tab?
 
       </main>
 
-      {/* NAVBAR UNIFICADO */}
+      {/* NAVBAR */}
       <nav className="fixed bottom-0 left-0 right-0 bg-[#0A0A0A]/90 backdrop-blur-xl border-t border-white/10 pb-8 pt-4 px-12 flex justify-between items-center z-50">
-        <Link href="/" className="flex flex-col items-center gap-1.5 text-gray-500 hover:text-white transition-colors">
+        <Link href="/" className="flex flex-col items-center gap-1.5 text-gray-500 hover:text-white transition-colors group">
           <Icons.Clock />
           <span className="text-[10px] font-bold tracking-widest">RESERVAS</span>
         </Link>
@@ -264,6 +246,13 @@ export default async function AdminPage({ searchParams }: { searchParams: { tab?
           <span className="text-[10px] font-bold tracking-widest">GESTIÓN</span>
         </Link>
       </nav>
+
+      {/* ESTILOS EXTRA PARA EL SLIDER GORDO */}
+      <style>{`
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.5); margin-top: -10px; }
+        input[type=range]::-moz-range-thumb { height: 24px; width: 24px; border-radius: 50%; background: #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: none; }
+        input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; }
+      `}</style>
     </div>
   );
 }
