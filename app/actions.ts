@@ -7,13 +7,14 @@ const sql = postgres(process.env.DATABASE_URL!, { ssl: 'require' });
 
 // --- ACCIÓN 1: GUARDAR CONFIGURACIÓN ---
 export async function updateConfigAction(formData: FormData) {
-  const id = formData.get('id');
+  // 👇 AQUÍ ESTABA EL ERROR: Añadimos "as string"
+  const id = formData.get('id') as string; 
+  
   const mode = formData.get('mode') as string;
   const waitTime = formData.get('waitTime') as string;
   const autoSwitch = formData.get('autoSwitch') as string;
   
   // Reconstruir zonas desde los inputs del formulario
-  // El cliente nos enviará un JSON stringify en un input oculto para facilitar esto
   const zonesJson = formData.get('zonesJson') as string;
 
   await sql`
