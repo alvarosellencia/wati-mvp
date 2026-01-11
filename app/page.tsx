@@ -1,18 +1,10 @@
-import { Suspense } from 'react'; // 👈 IMPORTANTE: Añadimos esta importación
+import { Suspense } from 'react';
 import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
-import Link from 'next/link';
 import DateSelector from './DateSelector';
 
 const sql = postgres(process.env.DATABASE_URL!, { ssl: 'require' });
 
-// --- ICONOS UNIFICADOS ---
-const Icons = {
-  Calendar: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>,
-  List: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>,
-};
-
-// --- LOGICA BACKEND ---
 async function deleteBooking(formData: FormData) {
   'use server';
   const id = formData.get('id') as string;
@@ -23,100 +15,87 @@ async function deleteBooking(formData: FormData) {
 }
 
 export default async function Home({ searchParams }: { searchParams: { date?: string } }) {
-  // 1. Gestionamos la fecha (Por defecto: HOY)
   const hoy = new Date().toISOString().split('T')[0];
   const selectedDate = searchParams.date || hoy;
 
-  // 2. Filtramos reservas SOLO de esa fecha
   const bookings = await sql`
     SELECT * FROM bookings 
     WHERE booking_date = ${selectedDate} 
     ORDER BY booking_time ASC
   `;
 
-  // Formato bonito de fecha para el título
   const fechaVisual = new Date(selectedDate).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white font-sans pb-32">
+    <div className="min-h-screen bg-[#F5F5F7] font-sans text-[#1D1D1F] pb-32">
       
-      {/* HEADER CON FECHA */}
-      <header className="sticky top-0 z-10 bg-[#0A0A0A]/90 backdrop-blur-xl border-b border-white/5 p-5">
+      {/* HEADER */}
+      <header className="sticky top-0 z-10 bg-[#F5F5F7]/90 backdrop-blur-xl border-b border-gray-200 p-5">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <p className="text-gray-400 text-[10px] uppercase tracking-widest font-bold">Reservas del</p>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent capitalize">
-              {fechaVisual}
-            </h1>
+            <p className="text-gray-500 text-[10px] uppercase tracking-widest font-bold">Reservas del</p>
+            <h1 className="text-2xl font-bold text-black capitalize tracking-tight">{fechaVisual}</h1>
           </div>
           <div className="text-right">
-            <span className="text-3xl font-bold text-white">{bookings.length}</span>
-            <p className="text-gray-500 text-[10px] uppercase">Mesas</p>
+            <span className="text-3xl font-extrabold text-black">{bookings.length}</span>
+            <p className="text-gray-500 text-[10px] uppercase font-bold">Mesas</p>
           </div>
         </div>
 
-        {/* 👇 AQUÍ ESTÁ EL CAMBIO: Envolvemos DateSelector en Suspense */}
-        <Suspense fallback={<div className="h-12 w-full bg-[#161616] rounded-xl animate-pulse"></div>}>
+        <Suspense fallback={<div className="h-12 w-full bg-gray-200 rounded-2xl animate-pulse"></div>}>
           <DateSelector />
         </Suspense>
-
       </header>
 
-      {/* LISTA DE RESERVAS */}
-      <main className="p-5 space-y-3">
+      {/* LISTA */}
+      <main className="p-5 space-y-4">
         {bookings.length === 0 ? (
-          <div className="text-center py-20 opacity-30 flex flex-col items-center gap-4">
-            <Icons.Calendar />
-            <p>No hay reservas para este día.</p>
-            <p className="text-xs text-gray-500">Cambia la fecha arriba para ver otros días.</p>
+          <div className="text-center py-20 opacity-40 flex flex-col items-center gap-4">
+            <span className="text-4xl">📅</span>
+            <p className="font-medium text-gray-500">No hay reservas para este día.</p>
           </div>
         ) : (
           bookings.map((booking) => (
-            <div key={booking.id} className="group relative bg-[#161616] border border-white/5 rounded-2xl p-4 shadow-lg active:scale-[0.98] transition-all">
+            <div key={booking.id} className="group bg-white rounded-3xl p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 flex justify-between items-center transition-all active:scale-[0.98]">
               
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex items-center gap-3">
-                  <div className="bg-blue-500/10 text-blue-400 font-bold px-3 py-1.5 rounded-lg text-lg font-mono">
-                    {booking.booking_time.slice(0, 5)}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white text-lg">{booking.client_name || 'Cliente'}</h3>
-                    <p className="text-[11px] text-gray-500 flex items-center gap-1 uppercase tracking-wide">
-                      {booking.notes || 'Sin zona'}
-                    </p>
+              <div className="flex items-center gap-4">
+                <div className="bg-[#F5F5F7] text-black font-bold px-4 py-3 rounded-2xl text-lg font-mono tracking-tight">
+                  {booking.booking_time.slice(0, 5)}
+                </div>
+                <div>
+                  <h3 className="font-bold text-black text-lg leading-tight">{booking.client_name || 'Cliente'}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                     <span className="bg-gray-100 px-2 py-0.5 rounded-md text-[10px] font-bold text-gray-500 uppercase">👥 {booking.pax}</span>
+                     <p className="text-xs text-gray-400 truncate max-w-[120px]">{booking.notes || ''}</p>
                   </div>
                 </div>
-                
-                {/* BORRAR */}
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <a href={`https://wa.me/${booking.client_phone}`} className="w-10 h-10 rounded-full bg-[#34C759]/10 flex items-center justify-center text-[#34C759]">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                </a>
                 <form action={deleteBooking}>
                   <input type="hidden" name="id" value={booking.id} />
-                  <button type="submit" className="text-gray-600 hover:text-red-500 transition p-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                  <button type="submit" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 </form>
-              </div>
-
-              <div className="flex items-center justify-between border-t border-white/5 pt-3 mt-2">
-                <span className="bg-[#222] px-2 py-1 rounded text-xs text-gray-300 font-medium">👥 {booking.pax} pax</span>
-                <a href={`https://wa.me/${booking.client_phone}`} target="_blank" className="text-[10px] font-bold text-green-400 hover:text-green-300 flex items-center gap-1 bg-green-900/20 px-3 py-1 rounded-full border border-green-500/20">
-                  WHATSAPP ›
-                </a>
               </div>
             </div>
           ))
         )}
       </main>
 
-      {/* NAVBAR UNIFICADO */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-[#0A0A0A]/90 backdrop-blur-xl border-t border-white/10 pb-8 pt-4 px-12 flex justify-between items-center z-50">
-        <Link href="/" className="flex flex-col items-center gap-1.5 text-white transition-colors group">
-          <div className="shadow-[0_0_15px_rgba(255,255,255,0.3)] rounded-full"><Icons.Calendar /></div>
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-200 pb-8 pt-4 px-12 flex justify-between items-center z-50">
+        <a href="/" className="flex flex-col items-center gap-1 text-[#0071E3]">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           <span className="text-[10px] font-bold tracking-widest">RESERVAS</span>
-        </Link>
-        <Link href="/admin" className="flex flex-col items-center gap-1.5 text-gray-500 hover:text-white transition-colors group">
-          <div className="group-hover:-translate-y-1 transition-transform duration-300"><Icons.List /></div>
-          <span className="text-[10px] font-bold tracking-widest">CONFIG</span>
-        </Link>
+        </a>
+        <a href="/admin" className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#0071E3] transition-colors">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+          <span className="text-[10px] font-bold tracking-widest">ADMIN</span>
+        </a>
       </nav>
     </div>
   );
