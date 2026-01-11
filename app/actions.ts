@@ -5,16 +5,17 @@ import { revalidatePath } from 'next/cache';
 
 const sql = postgres(process.env.DATABASE_URL!, { ssl: 'require' });
 
-// --- 1. GUARDAR CONFIGURACIÓN AVANZADA ---
+// --- 1. GUARDAR CONFIGURACIÓN ---
 export async function updateConfigAction(formData: FormData) {
   const id = formData.get('id') as string;
   const mode = formData.get('mode') as string;
   
-  // Nuevos campos de automatización doble
+  // Horarios Dobles
   const autoSwitchLunch = formData.get('autoSwitchLunch') as string;
   const autoSwitchDinner = formData.get('autoSwitchDinner') as string;
-  
   const avgDiningTime = formData.get('avgDiningTime') as string;
+  
+  // Zonas
   const zonesJson = formData.get('zonesJson') as string;
 
   const safeAvgTime = avgDiningTime || '45';
@@ -33,7 +34,7 @@ export async function updateConfigAction(formData: FormData) {
   revalidatePath('/');
 }
 
-// --- 2. CLIENTE PRESENCIAL (Idioma corregido) ---
+// --- 2. CLIENTE DE PASO (ESPAÑOL) ---
 export async function addWalkInAction(formData: FormData) {
   const name = formData.get('name') as string;
   const pax = formData.get('pax') as string;
@@ -44,7 +45,7 @@ export async function addWalkInAction(formData: FormData) {
   const time = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });
   
   // Texto corregido para el historial
-  const notes = "📍 Lista de Espera (Presencial)"; 
+  const notes = "📍 Cliente de Paso (Presencial)"; 
 
   await sql`
     INSERT INTO bookings (client_name, booking_date, booking_time, pax, client_phone, notes)

@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react';
 import { updateConfigAction, addWalkInAction, deleteBookingAction, updateBookingAction } from '../actions';
 
-// --- BIBLIOTECA DE ICONOS MINIMALISTAS (UI 2026) ---
-// Usamos nombres clave (keys) para guardarlos en la base de datos
-const ICON_LIBRARY: any = {
+// --- ICONOS UNIFICADOS (CORRECCIÓN DE ERROR DE COMPILACIÓN) ---
+const Icons: any = {
   // UI General
   Live: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>,
   Calendar: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>,
@@ -15,18 +14,20 @@ const ICON_LIBRARY: any = {
   Plus: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>,
   Edit: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>,
   Close: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="M6 6 18 18"/></svg>,
+  Check: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  Clock: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
   
-  // Iconos de Espacios (Seleccionables)
-  'room': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 20v-8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8"/><path d="M5 20v-8"/><path d="M19 20v-8"/><path d="M10 16v4"/><path d="M14 16v4"/></svg>, // Sala / Mesa
+  // Iconos de Espacios (Keys en minúscula para la DB)
+  'room': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 20v-8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8"/><path d="M5 20v-8"/><path d="M19 20v-8"/><path d="M10 16v4"/><path d="M14 16v4"/></svg>, // Sala
   'sun': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>, // Terraza
   'beer': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 11h1a3 3 0 0 1 0 6h-1"/><path d="M9 12v6"/><path d="M13 12v6"/><path d="M14 5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2h8Z"/><path d="M6 7h12v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"/></svg>, // Barra
-  'sofa': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0z"/></svg>, // VIP / Chill
+  'sofa': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0z"/></svg>, // VIP
   'tree': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19v3"/><path d="M12 19c-3 0-5.5-2-5.5-5.5S12 5 12 5s5.5 5 5.5 8.5c0 3.5-2.5 5.5-5.5 5.5Z"/></svg>, // Jardín
 };
 
-// Componente helper para renderizar iconos dinámicamente
+// Componente helper para renderizar iconos de zona
 const DynamicIcon = ({ name, className }: { name: string, className?: string }) => {
-  const IconComponent = ICON_LIBRARY[name] || ICON_LIBRARY['room'];
+  const IconComponent = Icons[name] || Icons['room'];
   return <IconComponent className={className} />;
 };
 
@@ -40,7 +41,6 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
   const [isZoneEditorOpen, setIsZoneEditorOpen] = useState(false);
   const [isBookingEditorOpen, setIsBookingEditorOpen] = useState(false);
   
-  // Estados de edición
   const [editingZoneIndex, setEditingZoneIndex] = useState<number | null>(null);
   const [zoneData, setZoneData] = useState({ name: '', tablesCount: 5, paxPerTable: 4, active: true, icon: 'room' });
   const [bookingData, setBookingData] = useState<any>(null);
@@ -48,13 +48,12 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
   useEffect(() => {
     try {
       const parsed = JSON.parse(config.zones);
-      setZones(parsed.map((z: any) => ({ ...z, icon: z.icon || 'room' }))); // Asegurar que todos tengan icono
+      setZones(parsed.map((z: any) => ({ ...z, icon: z.icon || 'room' }))); 
     } catch {
       setZones([]);
     }
   }, [config.zones]);
 
-  // KPIs
   const totalCapacityPax = zones.reduce((acc, z) => z.active ? acc + (z.tablesCount * z.paxPerTable) : acc, 0);
   const totalReservedPax = bookingsToday.reduce((acc, b) => acc + b.pax, 0);
   const percentage = totalCapacityPax > 0 ? Math.round((totalReservedPax / totalCapacityPax) * 100) : 0;
@@ -65,7 +64,7 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
     return 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]';
   };
 
-  // --- LOGICA DE ZONAS ---
+  // --- HANDLERS ---
   const openZoneEditor = (index: number | null) => {
     if (index !== null) {
       setEditingZoneIndex(index);
@@ -92,17 +91,16 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
     }
   };
 
-  // --- LOGICA DE RESERVAS ---
   const openBookingEditor = (booking: any) => {
     setBookingData(booking);
     setIsBookingEditorOpen(true);
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] font-sans text-gray-900 pb-28">
+    <div className="min-h-screen bg-[#FAFAFA] font-sans text-gray-900 pb-28">
       
       {/* HEADER */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-100 px-6 py-4 flex justify-between items-center">
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex justify-between items-center">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-gray-900">{config.restaurant_name}</h1>
           <div className="flex items-center gap-2 mt-0.5">
@@ -112,8 +110,8 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
             </span>
           </div>
         </div>
-        <div className="w-9 h-9 rounded-full bg-black text-white flex items-center justify-center font-bold text-xs shadow-sm">
-          M
+        <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-500 font-bold text-xs">
+          BM
         </div>
       </header>
 
@@ -123,7 +121,7 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
         {activeTab === 'ops' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
             
-            {/* KPI OCUPACIÓN */}
+            {/* KPI */}
             <section className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 relative overflow-hidden">
               <div className="flex justify-between items-end mb-4 relative z-10">
                 <div>
@@ -147,13 +145,13 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
             <section className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
               <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <span className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><Icons.Plus className="w-5 h-5"/></span>
-                Lista de Espera (Presencial)
+                Cliente de Paso (Presencial)
               </h2>
               <form action={async (formData) => { setLoading(true); await addWalkInAction(formData); setLoading(false); }} className="space-y-3">
                 <div className="flex gap-3">
                   <div className="flex-1 bg-gray-50 rounded-2xl px-4 py-3 focus-within:ring-2 focus-within:ring-blue-500 transition-all">
-                    <label className="text-[9px] font-bold text-gray-400 uppercase block mb-1">Nombre Cliente</label>
-                    <input name="name" placeholder="Ej: Juan" required className="w-full bg-transparent outline-none font-semibold text-gray-900 placeholder-gray-300 text-sm" />
+                    <label className="text-[9px] font-bold text-gray-400 uppercase block mb-1">Nombre</label>
+                    <input name="name" placeholder="Ej: Mesa 5" required className="w-full bg-transparent outline-none font-semibold text-gray-900 placeholder-gray-300 text-sm" />
                   </div>
                   <div className="w-24 bg-gray-50 rounded-2xl px-4 py-3 focus-within:ring-2 focus-within:ring-blue-500 transition-all">
                     <label className="text-[9px] font-bold text-gray-400 uppercase block mb-1">Pax</label>
@@ -212,7 +210,7 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
              </div>
              
              {bookings.length === 0 ? (
-                <div className="text-center py-20 text-gray-400">No hay historial disponible aún.</div>
+                <div className="text-center py-20 text-gray-400">No hay historial disponible.</div>
              ) : (
                bookings.map(b => (
                   <div key={b.id} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex justify-between items-start">
@@ -232,7 +230,28 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
            </div>
         )}
 
-        {/* ================= 3. CONFIGURACIÓN ================= */}
+        {/* ================= 3. ANALÍTICA ================= */}
+        {activeTab === 'analytics' && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+             <h2 className="text-xl font-bold px-2">Datos Clave</h2>
+             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                <h3 className="text-gray-500 text-xs font-bold uppercase mb-2">Pax Totales</h3>
+                <p className="text-4xl font-extrabold">{bookings.reduce((a,b)=>a+b.pax,0)}</p>
+             </div>
+             <div className="grid grid-cols-2 gap-4">
+               <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                  <h3 className="text-gray-500 text-xs font-bold uppercase mb-2">Reservas</h3>
+                  <p className="text-2xl font-bold">{bookings.length}</p>
+               </div>
+               <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                  <h3 className="text-gray-500 text-xs font-bold uppercase mb-2">Promedio</h3>
+                  <p className="text-2xl font-bold">{bookings.length > 0 ? Math.round(bookings.reduce((a,b)=>a+b.pax,0)/bookings.length) : 0} pax</p>
+               </div>
+             </div>
+          </div>
+        )}
+
+        {/* ================= 4. CONFIGURACIÓN ================= */}
         {activeTab === 'config' && (
           <form action={updateConfigAction} className="space-y-6 pb-10 animate-in fade-in slide-in-from-right-4 duration-300">
             <input type="hidden" name="id" value={config.id} />
@@ -271,7 +290,7 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
                 {/* Tiempo medio */}
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl mt-4">
                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-blue-500 shadow-sm">⏳</div>
+                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-blue-500 shadow-sm"><Icons.Clock className="w-5 h-5" /></div>
                       <div>
                         <p className="text-xs font-bold text-gray-900">Tiempo Medio Estancia</p>
                         <p className="text-[10px] text-gray-400">Para calcular esperas</p>
