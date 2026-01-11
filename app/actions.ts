@@ -5,21 +5,25 @@ import { revalidatePath } from 'next/cache';
 
 const sql = postgres(process.env.DATABASE_URL!, { ssl: 'require' });
 
-// --- 1. GUARDAR CONFIGURACIÓN (Con nuevos campos de automatización) ---
+// --- 1. GUARDAR CONFIGURACIÓN AVANZADA ---
 export async function updateConfigAction(formData: FormData) {
   const id = formData.get('id') as string;
   const mode = formData.get('mode') as string;
-  const autoSwitch = formData.get('autoSwitch') as string; // Hora de corte (ej: 14:30)
-  const avgDiningTime = formData.get('avgDiningTime') as string; // Nuevo: Tiempo medio comer
+  
+  // Nuevos campos de automatización doble
+  const autoSwitchLunch = formData.get('autoSwitchLunch') as string;
+  const autoSwitchDinner = formData.get('autoSwitchDinner') as string;
+  
+  const avgDiningTime = formData.get('avgDiningTime') as string;
   const zonesJson = formData.get('zonesJson') as string;
 
-  // Si no se define tiempo medio, ponemos 45 min por defecto
   const safeAvgTime = avgDiningTime || '45';
 
   await sql`
     UPDATE config 
     SET service_mode = ${mode},
-        auto_switch_time = ${autoSwitch},
+        auto_switch_lunch = ${autoSwitchLunch},
+        auto_switch_dinner = ${autoSwitchDinner},
         avg_booking_duration = ${safeAvgTime},
         zones = ${zonesJson}
     WHERE id = ${id}
@@ -29,7 +33,7 @@ export async function updateConfigAction(formData: FormData) {
   revalidatePath('/');
 }
 
-// --- 2. CLIENTE DE PASO (Idioma corregido) ---
+// --- 2. CLIENTE PRESENCIAL (Idioma corregido) ---
 export async function addWalkInAction(formData: FormData) {
   const name = formData.get('name') as string;
   const pax = formData.get('pax') as string;
@@ -38,7 +42,9 @@ export async function addWalkInAction(formData: FormData) {
   const now = new Date();
   const date = now.toISOString().split('T')[0];
   const time = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });
-  const notes = "🚶 Cliente de paso"; // Español de barrio
+  
+  // Texto corregido para el historial
+  const notes = "📍 Lista de Espera (Presencial)"; 
 
   await sql`
     INSERT INTO bookings (client_name, booking_date, booking_time, pax, client_phone, notes)
@@ -47,7 +53,7 @@ export async function addWalkInAction(formData: FormData) {
   revalidatePath('/admin');
 }
 
-// --- 3. EDITAR RESERVA (Nuevo) ---
+// --- 3. ACTUALIZAR RESERVA ---
 export async function updateBookingAction(formData: FormData) {
   const id = formData.get('id') as string;
   const name = formData.get('name') as string;
@@ -68,7 +74,7 @@ export async function updateBookingAction(formData: FormData) {
   revalidatePath('/admin');
 }
 
-// --- 4. BORRAR RESERVA ---
+// --- 4. BORRAR ---
 export async function deleteBookingAction(id: number) {
   await sql`DELETE FROM bookings WHERE id = ${id}`;
   revalidatePath('/admin');

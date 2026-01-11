@@ -8,7 +8,10 @@ export default async function AdminPage() {
   
   const hoy = new Date().toISOString().split('T')[0];
   
+  // 1. Reservas de HOY (Operativa)
   const bookingsHoy = await sql`SELECT * FROM bookings WHERE booking_date = ${hoy} ORDER BY booking_time ASC`;
+  
+  // 2. Histórico (Reservas)
   const allBookings = await sql`SELECT * FROM bookings ORDER BY booking_date DESC, booking_time ASC LIMIT 100`;
 
   return (
