@@ -5,16 +5,14 @@ import { revalidatePath } from 'next/cache';
 
 const sql = postgres(process.env.DATABASE_URL!, { ssl: 'require' });
 
-// --- ACCIÓN 1: GUARDAR CONFIGURACIÓN ---
+// --- 1. GUARDAR CONFIGURACIÓN AVANZADA ---
 export async function updateConfigAction(formData: FormData) {
-  // 👇 AQUÍ ESTABA EL ERROR: Añadimos "as string"
-  const id = formData.get('id') as string; 
-  
+  const id = formData.get('id') as string;
   const mode = formData.get('mode') as string;
   const waitTime = formData.get('waitTime') as string;
   const autoSwitch = formData.get('autoSwitch') as string;
   
-  // Reconstruir zonas desde los inputs del formulario
+  // Recibimos el JSON complejo de zonas (Nombre, Tipo, Num Mesas, Pax por Mesa)
   const zonesJson = formData.get('zonesJson') as string;
 
   await sql`
@@ -30,24 +28,27 @@ export async function updateConfigAction(formData: FormData) {
   revalidatePath('/');
 }
 
-// --- ACCIÓN 2: AÑADIR WALK-IN (CLIENTE EN PUERTA) ---
+// --- 2. WALK-IN (Cliente en puerta) ---
 export async function addWalkInAction(formData: FormData) {
   const name = formData.get('name') as string;
   const pax = formData.get('pax') as string;
   const phone = formData.get('phone') as string;
   
-  // Obtenemos la fecha y hora del servidor para asegurar precisión
   const now = new Date();
   const date = now.toISOString().split('T')[0];
+  // Hora local España
   const time = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });
-  
-  const notes = "👤 Walk-in (Manual)";
+  const notes = "👤 Walk-in (En Puerta)";
 
   await sql`
     INSERT INTO bookings (client_name, booking_date, booking_time, pax, client_phone, notes)
     VALUES (${name}, ${date}, ${time}, ${pax}, ${phone || ''}, ${notes})
   `;
-  
   revalidatePath('/admin');
-  revalidatePath('/');
+}
+
+// --- 3. BORRAR RESERVA (Desde el Admin) ---
+export async function deleteBookingAction(id: number) {
+  await sql`DELETE FROM bookings WHERE id = ${id}`;
+  revalidatePath('/admin');
 }
