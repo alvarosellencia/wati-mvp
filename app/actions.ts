@@ -5,17 +5,20 @@ import { revalidatePath } from 'next/cache';
 
 const sql = postgres(process.env.DATABASE_URL!, { ssl: 'require' });
 
-// --- 1. GUARDAR CONFIGURACIÓN ---
+// --- 1. GUARDAR CONFIGURACIÓN (CON RANGOS Y DÍAS) ---
 export async function updateConfigAction(formData: FormData) {
   const id = formData.get('id') as string;
-  const mode = formData.get('mode') as string;
+  const mode = formData.get('mode') as string; // El modo manual sigue mandando si se toca
   
-  // Horarios Dobles
-  const autoSwitchLunch = formData.get('autoSwitchLunch') as string;
-  const autoSwitchDinner = formData.get('autoSwitchDinner') as string;
+  // Rangos Horarios
+  const lunchStart = formData.get('lunchStart') as string;
+  const lunchEnd = formData.get('lunchEnd') as string;
+  const dinnerStart = formData.get('dinnerStart') as string;
+  const dinnerEnd = formData.get('dinnerEnd') as string;
+  
+  // Días Cerrados y Otros
+  const closedDays = formData.get('closedDays') as string; // JSON string
   const avgDiningTime = formData.get('avgDiningTime') as string;
-  
-  // Zonas
   const zonesJson = formData.get('zonesJson') as string;
 
   const safeAvgTime = avgDiningTime || '45';
@@ -23,8 +26,11 @@ export async function updateConfigAction(formData: FormData) {
   await sql`
     UPDATE config 
     SET service_mode = ${mode},
-        auto_switch_lunch = ${autoSwitchLunch},
-        auto_switch_dinner = ${autoSwitchDinner},
+        lunch_start = ${lunchStart},
+        lunch_end = ${lunchEnd},
+        dinner_start = ${dinnerStart},
+        dinner_end = ${dinnerEnd},
+        closed_days = ${closedDays},
         avg_booking_duration = ${safeAvgTime},
         zones = ${zonesJson}
     WHERE id = ${id}
@@ -34,7 +40,7 @@ export async function updateConfigAction(formData: FormData) {
   revalidatePath('/');
 }
 
-// --- 2. CLIENTE DE PASO (ESPAÑOL) ---
+// --- 2. CLIENTE DE PASO ---
 export async function addWalkInAction(formData: FormData) {
   const name = formData.get('name') as string;
   const pax = formData.get('pax') as string;
@@ -43,9 +49,7 @@ export async function addWalkInAction(formData: FormData) {
   const now = new Date();
   const date = now.toISOString().split('T')[0];
   const time = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });
-  
-  // Texto corregido para el historial
-  const notes = "📍 Cliente de Paso (Presencial)"; 
+  const notes = "📍 Lista de Espera (Presencial)"; 
 
   await sql`
     INSERT INTO bookings (client_name, booking_date, booking_time, pax, client_phone, notes)

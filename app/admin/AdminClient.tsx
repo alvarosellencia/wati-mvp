@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react';
 import { updateConfigAction, addWalkInAction, deleteBookingAction, updateBookingAction } from '../actions';
 
-// --- ICONOS UNIFICADOS (CORRECCIÓN DE ERROR DE COMPILACIÓN) ---
+// --- ICONOS ---
 const Icons: any = {
-  // UI General
   Live: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>,
   Calendar: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>,
   Chart: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>,
@@ -13,23 +12,30 @@ const Icons: any = {
   Trash: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>,
   Plus: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>,
   Edit: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>,
-  Close: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="M6 6 18 18"/></svg>,
-  Check: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
-  Clock: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  ArrowRight: (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>,
   
-  // Iconos de Espacios (Keys en minúscula para la DB)
-  'room': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 20v-8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8"/><path d="M5 20v-8"/><path d="M19 20v-8"/><path d="M10 16v4"/><path d="M14 16v4"/></svg>, // Sala
-  'sun': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>, // Terraza
-  'beer': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 11h1a3 3 0 0 1 0 6h-1"/><path d="M9 12v6"/><path d="M13 12v6"/><path d="M14 5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2h8Z"/><path d="M6 7h12v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"/></svg>, // Barra
-  'sofa': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0z"/></svg>, // VIP
-  'tree': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19v3"/><path d="M12 19c-3 0-5.5-2-5.5-5.5S12 5 12 5s5.5 5 5.5 8.5c0 3.5-2.5 5.5-5.5 5.5Z"/></svg>, // Jardín
+  // Iconos de Espacios
+  'room': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 20v-8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8"/><path d="M5 20v-8"/><path d="M19 20v-8"/><path d="M10 16v4"/><path d="M14 16v4"/></svg>,
+  'sun': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>,
+  'beer': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 11h1a3 3 0 0 1 0 6h-1"/><path d="M9 12v6"/><path d="M13 12v6"/><path d="M14 5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2h8Z"/><path d="M6 7h12v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"/></svg>,
+  'sofa': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0z"/></svg>,
+  'tree': (props: any) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19v3"/><path d="M12 19c-3 0-5.5-2-5.5-5.5S12 5 12 5s5.5 5 5.5 8.5c0 3.5-2.5 5.5-5.5 5.5Z"/></svg>,
 };
 
-// Componente helper para renderizar iconos de zona
 const DynamicIcon = ({ name, className }: { name: string, className?: string }) => {
   const IconComponent = Icons[name] || Icons['room'];
   return <IconComponent className={className} />;
 };
+
+const DAYS_OF_WEEK = [
+  { id: 1, label: 'L' }, // Lunes
+  { id: 2, label: 'M' },
+  { id: 3, label: 'X' },
+  { id: 4, label: 'J' },
+  { id: 5, label: 'V' },
+  { id: 6, label: 'S' },
+  { id: 0, label: 'D' }, // Domingo
+];
 
 export default function AdminClient({ config, bookings, bookingsToday }: { config: any, bookings: any[], bookingsToday: any[] }) {
   const [activeTab, setActiveTab] = useState('ops');
@@ -37,6 +43,9 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
   const [loading, setLoading] = useState(false);
   const [localMode, setLocalMode] = useState(config.service_mode);
   
+  // Estado para días cerrados (Array de números 0-6)
+  const [closedDays, setClosedDays] = useState<number[]>([]);
+
   // Modals
   const [isZoneEditorOpen, setIsZoneEditorOpen] = useState(false);
   const [isBookingEditorOpen, setIsBookingEditorOpen] = useState(false);
@@ -47,13 +56,20 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
 
   useEffect(() => {
     try {
-      const parsed = JSON.parse(config.zones);
-      setZones(parsed.map((z: any) => ({ ...z, icon: z.icon || 'room' }))); 
+      // Parsear zonas
+      const parsedZones = JSON.parse(config.zones);
+      setZones(parsedZones.map((z: any) => ({ ...z, icon: z.icon || 'room' })));
+      
+      // Parsear días cerrados
+      const parsedDays = JSON.parse(config.closed_days || '[]');
+      setClosedDays(parsedDays);
     } catch {
       setZones([]);
+      setClosedDays([]);
     }
-  }, [config.zones]);
+  }, [config.zones, config.closed_days]);
 
+  // KPIs y Lógica
   const totalCapacityPax = zones.reduce((acc, z) => z.active ? acc + (z.tablesCount * z.paxPerTable) : acc, 0);
   const totalReservedPax = bookingsToday.reduce((acc, b) => acc + b.pax, 0);
   const percentage = totalCapacityPax > 0 ? Math.round((totalReservedPax / totalCapacityPax) * 100) : 0;
@@ -65,6 +81,14 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
   };
 
   // --- HANDLERS ---
+  const toggleClosedDay = (dayId: number) => {
+    if (closedDays.includes(dayId)) {
+      setClosedDays(closedDays.filter(d => d !== dayId));
+    } else {
+      setClosedDays([...closedDays, dayId]);
+    }
+  };
+
   const openZoneEditor = (index: number | null) => {
     if (index !== null) {
       setEditingZoneIndex(index);
@@ -121,7 +145,7 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
         {activeTab === 'ops' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
             
-            {/* KPI */}
+            {/* KPI OCUPACIÓN */}
             <section className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 relative overflow-hidden">
               <div className="flex justify-between items-end mb-4 relative z-10">
                 <div>
@@ -210,10 +234,10 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
              </div>
              
              {bookings.length === 0 ? (
-                <div className="text-center py-20 text-gray-400">No hay historial disponible.</div>
+                <div className="text-center py-20 text-gray-400">No hay historial disponible aún.</div>
              ) : (
                bookings.map(b => (
-                  <div key={b.id} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex justify-between items-start">
+                  <div key={b.id} onClick={() => openBookingEditor(b)} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex justify-between items-start cursor-pointer active:scale-[0.99] transition-transform">
                      <div>
                         <div className="inline-block bg-blue-50 text-blue-600 text-[10px] font-bold uppercase px-2 py-1 rounded-md mb-2">
                           {new Date(b.booking_date).toLocaleDateString()}
@@ -221,9 +245,7 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
                         <div className="font-bold text-lg text-gray-900">{b.client_name}</div>
                         <div className="text-sm text-gray-500 mt-1">Hora: {b.booking_time} • {b.pax} Pax</div>
                      </div>
-                     <button onClick={() => deleteBookingAction(b.id)} className="p-2 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors">
-                       <Icons.Trash className="w-4 h-4" />
-                     </button>
+                     <div className="text-gray-300 pt-2"><Icons.Edit className="w-4 h-4" /></div>
                   </div>
                ))
              )}
@@ -257,40 +279,72 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
             <input type="hidden" name="id" value={config.id} />
             <input type="hidden" name="mode" value={localMode} />
             <input type="hidden" name="zonesJson" value={JSON.stringify(zones)} />
+            <input type="hidden" name="closedDays" value={JSON.stringify(closedDays)} />
 
-            {/* AUTOMATIZACIÓN DOBLE TURNO */}
+            {/* DÍAS DE CIERRE */}
             <section className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
-              <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Automatización de Cola</h2>
+              <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Días de Descanso (Cerrado)</h2>
+              <div className="flex justify-between items-center gap-1">
+                 {DAYS_OF_WEEK.map(day => (
+                    <button
+                       key={day.id}
+                       type="button"
+                       onClick={() => toggleClosedDay(day.id)}
+                       className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all ${closedDays.includes(day.id) ? 'bg-gray-900 text-white shadow-lg scale-110' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                    >
+                       {day.label}
+                    </button>
+                 ))}
+              </div>
+            </section>
+
+            {/* AUTOMATIZACIÓN DOBLE TURNO (RANGOS) */}
+            <section className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
+              <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Automatización de Flujo</h2>
               
-              <div className="space-y-3">
+              <div className="space-y-6">
                 {/* Turno Mediodía */}
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
-                   <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-amber-500 shadow-sm"><Icons.Live className="w-5 h-5"/></div>
-                      <div>
-                        <p className="text-xs font-bold text-gray-900">Corte Mediodía</p>
-                        <p className="text-[10px] text-gray-400">Fin Reservas / Inicio Espera</p>
+                <div className="space-y-2">
+                   <div className="flex items-center gap-2 mb-1">
+                      <Icons.Live className="w-4 h-4 text-amber-500" />
+                      <span className="text-xs font-bold text-gray-900">Turno Mediodía</span>
+                   </div>
+                   <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-2xl">
+                      <div className="flex-1">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase block mb-1">Inicio Espera</label>
+                        <input type="time" name="lunchStart" defaultValue={config.lunch_start} className="w-full bg-transparent font-bold text-gray-900 border-none p-0 focus:ring-0" />
+                      </div>
+                      <Icons.ArrowRight className="w-4 h-4 text-gray-300" />
+                      <div className="flex-1 text-right">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase block mb-1">Cierre Cocina</label>
+                        <input type="time" name="lunchEnd" defaultValue={config.lunch_end} className="w-full bg-transparent font-bold text-gray-900 border-none p-0 focus:ring-0 text-right" />
                       </div>
                    </div>
-                   <input type="time" name="autoSwitchLunch" defaultValue={config.auto_switch_lunch} className="bg-transparent text-right font-bold text-gray-900 border-none focus:ring-0 p-0" />
                 </div>
 
                 {/* Turno Noche */}
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
-                   <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm"><Icons.Live className="w-5 h-5"/></div>
-                      <div>
-                        <p className="text-xs font-bold text-gray-900">Corte Noche</p>
-                        <p className="text-[10px] text-gray-400">Fin Reservas / Inicio Espera</p>
+                <div className="space-y-2">
+                   <div className="flex items-center gap-2 mb-1">
+                      <Icons.Live className="w-4 h-4 text-indigo-500" />
+                      <span className="text-xs font-bold text-gray-900">Turno Noche</span>
+                   </div>
+                   <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-2xl">
+                      <div className="flex-1">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase block mb-1">Inicio Espera</label>
+                        <input type="time" name="dinnerStart" defaultValue={config.dinner_start} className="w-full bg-transparent font-bold text-gray-900 border-none p-0 focus:ring-0" />
+                      </div>
+                      <Icons.ArrowRight className="w-4 h-4 text-gray-300" />
+                      <div className="flex-1 text-right">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase block mb-1">Cierre Cocina</label>
+                        <input type="time" name="dinnerEnd" defaultValue={config.dinner_end} className="w-full bg-transparent font-bold text-gray-900 border-none p-0 focus:ring-0 text-right" />
                       </div>
                    </div>
-                   <input type="time" name="autoSwitchDinner" defaultValue={config.auto_switch_dinner} className="bg-transparent text-right font-bold text-gray-900 border-none focus:ring-0 p-0" />
                 </div>
 
                 {/* Tiempo medio */}
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl mt-4">
                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-blue-500 shadow-sm"><Icons.Clock className="w-5 h-5" /></div>
+                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-blue-500 shadow-sm">⏳</div>
                       <div>
                         <p className="text-xs font-bold text-gray-900">Tiempo Medio Estancia</p>
                         <p className="text-[10px] text-gray-400">Para calcular esperas</p>
@@ -325,7 +379,7 @@ export default function AdminClient({ config, bookings, bookingsToday }: { confi
               </div>
             </section>
 
-            {/* ESPACIOS (Editable) */}
+            {/* ESPACIOS */}
             <section className="space-y-4">
               <div className="flex justify-between items-center px-2">
                  <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Mis Espacios</h2>
