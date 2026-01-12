@@ -42,29 +42,27 @@ export async function POST(request: Request) {
 
     // Verificamos que sea un mensaje de texto válido
     if (!message || message.type !== 'text') {
-      return NextResponse.json({ success: true }); // Ignoramos estados, fotos, etc.
+      return NextResponse.json({ success: true }); 
     }
 
     const userText = message.text.body;
-    userPhone = message.from; // Guardamos el teléfono para reportar errores si hace falta
+    userPhone = message.from; 
 
-    // 1. OBTENER CONFIGURACIÓN (Con protección si falla)
+    // 1. OBTENER CONFIGURACIÓN
     let config: any = {};
     try {
       const configs = await sql`SELECT * FROM config LIMIT 1`;
       if (configs.length > 0) {
         config = configs[0];
       } else {
-        // Si no hay config, creamos una "falsa" para que no pete
         config = { restaurant_name: "Bar Manolo", service_mode: "booking" };
       }
     } catch (dbError) {
       console.error("Error DB:", dbError);
-      await sendWhatsApp(userPhone, "⚠️ Error: No puedo conectar con la Base de Datos.");
       return NextResponse.json({ success: true });
     }
 
-    // 2. LÓGICA DE HORARIOS (Con try/catch para evitar NaN)
+    // 2. LÓGICA DE HORARIOS
     const now = new Date();
     const madridTime = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Madrid" }));
     const currentDay = madridTime.getDay(); // 0=Domingo
@@ -74,8 +72,18 @@ export async function POST(request: Request) {
     let reason = "";
 
     try {
-      // Días cerrados
-      const closedDays = JSON.parse(config.closed_days || '[]');
+      // --- AQUÍ ESTABA EL ERROR: AHORA ESTÁ BLINDADO ---
+      let closedDays: number[] = [];
+      try {
+        // Solo intentamos leerlo si parece una lista válida (empieza por corchete)
+        if (config.closed_days && typeof config.closed_days === 'string' && config.closed_days.trim().startsWith('[')) {
+           closedDays = JSON.parse(config.closed_days);
+        }
+      } catch (e) {
+        console.log("⚠️ Dato de días corrupto ignorado, asumimos abierto.");
+        closedDays = [];
+      }
+
       if (Array.isArray(closedDays) && closedDays.includes(currentDay)) {
         effectiveMode = 'closed';
         reason = "Hoy es día de descanso.";
@@ -107,7 +115,6 @@ export async function POST(request: Request) {
       }
     } catch (logicError) {
       console.error("Error Lógica Horarios:", logicError);
-      // Si falla la lógica de horas, seguimos en modo manual para no romper
     }
 
     // 3. TEXTO PARA IA
@@ -124,11 +131,11 @@ export async function POST(request: Request) {
 
     let instrucciones = "";
     if (effectiveMode === 'closed') {
-      instrucciones = `⛔ EL LOCAL ESTÁ CERRADO. Motivo: ${reason}. Di que no es posible reservar.`;
+      instrucciones = `⛔ EL LOCAL ESTÁ CERRADO. Motivo: ${reason}. Di amablemente que no es posible reservar ahora.`;
     } else if (effectiveMode === 'waitlist') {
-      instrucciones = `📝 MODO LISTA DE ESPERA (Walk-in). No aceptes reservas a hora fija. Di: "Vente y te apunto, hay ${config.avg_booking_duration || 45} min de espera aprox".`;
+      instrucciones = `📝 MODO LISTA DE ESPERA (Walk-in). No aceptes reservas a hora fija. Di: "Para ahora ya funcionamos con Lista de Espera. Vente y te apuntamos por orden de llegada. Tiempo estimado: ${config.avg_booking_duration || 45} min aprox".`;
     } else {
-      instrucciones = `✅ MODO RESERVAS ABIERTAS. Acepta reservas si hay hueco.`;
+      instrucciones = `✅ MODO RESERVAS ABIERTAS. Acepta reservas si hay hueco. Pide día, hora y pax.`;
     }
 
     // 4. LLAMAR A OPENAI
@@ -141,7 +148,7 @@ export async function POST(request: Request) {
             content: `Eres Paco, del bar '${config.restaurant_name || 'Bar Manolo'}'.
             ESTADO: ${instrucciones}
             ZONAS: ${zonasTexto}
-            OBJETIVO: Gestionar cliente. Sé breve.
+            OBJETIVO: Gestionar cliente. Sé breve y cercano.
             SI CONFIRMAS RESERVA: Devuelve JSON { "reply": "...", "booking": { "date": "YYYY-MM-DD", "time": "HH:MM", "pax": 4, "name": "Nombre" } }
             SI SOLO HABLAS: Devuelve JSON { "reply": "...", "booking": null }` 
           },
@@ -162,7 +169,7 @@ export async function POST(request: Request) {
           `;
         } catch (insertError) {
           console.error("Error guardando reserva:", insertError);
-          await sendWhatsApp(userPhone, "❌ He intentado guardar la reserva pero ha fallado mi base de datos. Por favor, llama al bar.");
+          await sendWhatsApp(userPhone, "❌ He intentado guardar la reserva pero ha fallado mi sistema. Por favor, llama al bar.");
           return NextResponse.json({ success: true });
         }
       }
@@ -172,21 +179,16 @@ export async function POST(request: Request) {
 
     } catch (aiError) {
       console.error("Error OpenAI:", aiError);
-      await sendWhatsApp(userPhone, "🧠 Estoy un poco mareado (Error IA). Inténtalo en un minuto.");
     }
 
     return NextResponse.json({ success: true });
 
   } catch (globalError) {
     console.error("Error CRÍTICO:", globalError);
-    if (userPhone) {
-      await sendWhatsApp(userPhone, "💥 Error crítico del sistema.");
-    }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-// Verificación del Webhook
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   if (searchParams.get('hub.mode') === 'subscribe' && searchParams.get('hub.verify_token') === 'wati123') {
